@@ -21,7 +21,6 @@ parameters = {
     "cnt" : 4
 
 }
-print(f"DEBUG: API Key Length is {len(API_KEY) if API_KEY else 0} characters.")
 response = requests.get(url="https://api.openweathermap.org/data/2.5/forecast",params=parameters)
 response.raise_for_status()
 weather_data = response.json()
