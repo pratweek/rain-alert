@@ -27,8 +27,8 @@ weather_data = response.json()
 
 will_rain = False
 for hour in weather_data["list"]:
-    condition_code = hour["weather"][0]["id"] < 600
-    if int(condition_code) < 600:
+    condition_code = hour["weather"][0]["id"]
+    if condition_code < 600:
         will_rain = True
         break
 if will_rain:
