@@ -1,12 +1,22 @@
 import requests
+import smtplib
 import os
-api_key = "1d2d41681ae0ed8325dc89b517dac6cd"
+from email.message import EmailMessage
+from dotenv import load_dotenv
 
+load_dotenv()
+
+API_KEY = os.environ.get("OWN_API_KEY")
+SENDER_EMAIL = os.environ.get("EMAIL_SENDER")
+SENDER_PASSWORD = os.environ.get("EMAIL_PASSWORD")
+RECEIVER_EMAIL = os.environ.get("EMAIL_RECEIVER")
+LAT = float(os.environ.get("LATITUDE"))
+LON = float(os.environ.get("LONGITUDE"))
 
 parameters = {
-    "lon" : 84.201187,
-    "lat" : 25.755299,
-    "appid" : api_key,
+    "lon" : LON,
+    "lat" : LAT,
+    "appid" : API_KEY,
     "units" : "metric",
     "cnt" : 4
 
@@ -17,8 +27,25 @@ weather_data = response.json()
 
 will_rain = False
 for hour in weather_data["list"]:
-    condition_code = hour["weather"][0]["id"] < 700
-    if int(condition_code) < 700:
+    condition_code = hour["weather"][0]["id"] < 600
+    if int(condition_code) < 600:
         will_rain = True
+        break
 if will_rain:
-    print("It will rain today")
+    msg = EmailMessage()
+    msg["Subject"] = "☔ Weather Alert: Rain Expected Today!"
+    msg["From"] = SENDER_EMAIL
+    msg["To"] = RECEIVER_EMAIL
+    msg.set_content("Hi there,\n\nIt looks like rain is in the forecast for the next few hours. Don't forget to grab your umbrella before you head out!\n\nBest,\nYour Weather Bot")
+    try:
+        with smtplib.SMTP("smtp.gmail.com",587) as connection :
+            connection.starttls()
+            connection.login(user=SENDER_EMAIL,password=SENDER_PASSWORD)
+            connection.send_message(msg)
+        print("Email sent successfully!")
+
+    except Exception as e:
+        print(f"Failed to send email: {e}")
+
+else:
+    print("No rain predicted. No email sent.")
